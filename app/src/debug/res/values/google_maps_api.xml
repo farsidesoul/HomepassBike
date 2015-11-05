@@ -4,7 +4,11 @@
 
     To get one, follow this link, follow the directions and press "Create" at the end:
 
+	Home:
     https://console.developers.google.com/flows/enableapi?apiid=maps_android_backend&keyType=CLIENT_SIDE_ANDROID&r=37:0F:F1:76:D6:C4:AD:A4:96:05:75:4F:C3:77:E7:55:E1:D4:D4:A4%3Bau.com.bfbapps.homepassbike
+
+    Mac:
+    https://console.developers.google.com/flows/enableapi?apiid=maps_android_backend&keyType=CLIENT_SIDE_ANDROID&r=54:71:75:21:6D:BA:0B:06:85:9C:EA:1B:4B:AF:AD:51:A1:59:5D:CC%3Bau.com.bfbapps.homepassbike
 
     You can also add your credentials to an existing key, using this line:
     37:0F:F1:76:D6:C4:AD:A4:96:05:75:4F:C3:77:E7:55:E1:D4:D4:A4;au.com.bfbapps.homepassbike
@@ -14,8 +18,11 @@
 
     Once you have your key (it starts with "AIza"), replace the "google_maps_key"
     string in this file.
+
+
+		AIzaSyBS9YNOSw7VQBQI8nfROJE4HZdJXa0Vnu4
     -->
 	<string name="google_maps_key" translatable="false" templateMergeStrategy="preserve">
-		AIzaSyBS9YNOSw7VQBQI8nfROJE4HZdJXa0Vnu4
+        AIzaSyCTZ2DNGGJz_uVz2rAc64f0_uyT8MoselQ
 	</string>
 </resources>

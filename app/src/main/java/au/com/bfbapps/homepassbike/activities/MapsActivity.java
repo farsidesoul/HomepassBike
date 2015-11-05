@@ -1,4 +1,4 @@
-package au.com.bfbapps.homepassbike;
+package au.com.bfbapps.homepassbike.activities;
 
 import android.graphics.Color;
 import android.support.v4.app.FragmentActivity;
@@ -18,6 +18,8 @@ import com.google.gson.GsonBuilder;
 
 import java.util.List;
 
+import au.com.bfbapps.homepassbike.R;
+import au.com.bfbapps.homepassbike.adapters.InfoPopupAdapter;
 import au.com.bfbapps.homepassbike.model.BikeLocation;
 import au.com.bfbapps.homepassbike.service.MelbourneBikeService;
 import retrofit.Call;
@@ -28,7 +30,7 @@ import retrofit.Retrofit;
 
 public class MapsActivity extends FragmentActivity implements OnMapReadyCallback {
 
-	private final double BASE_RADIUS = 5;
+	private final double BASE_RADIUS = 3;
 
 	private GoogleMap map;
 	private Retrofit retrofit;
@@ -82,14 +84,25 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
 	private void handleBikeLocationReturn(List<BikeLocation> bikeLocations){
 		for(BikeLocation location : bikeLocations){
-			createCircleOnBikeLocation(location);
+			LatLng coords = new LatLng(location.getCoordinates().getLatitude(),
+					location.getCoordinates().getLongitude());
+			createCircleOnBikeLocation(location, coords);
+			createMarkerWithLabel(location, coords);
 		}
 	}
 
-	private void createCircleOnBikeLocation(BikeLocation location) {
-		LatLng coords = new LatLng(location.getCoordinates().getLatitude(),
-				location.getCoordinates().getLongitude());
+	private void createMarkerWithLabel(BikeLocation location, LatLng coords) {
+		MarkerOptions options = new MarkerOptions()
+				.position(coords)
+				.draggable(false)
+				.title(location.getFeatureName())
+				.snippet("Bikes Available: " + location.getNbbikes() + "|Empty Slots: " + location.getNbemptydoc())
+				.alpha(0f);
 
+		map.addMarker(options);
+	}
+
+	private void createCircleOnBikeLocation(BikeLocation location, LatLng coords) {
 		CircleOptions options = new CircleOptions()
 				.radius(BASE_RADIUS * location.getNbbikes())
 				.center(coords)
@@ -121,5 +134,6 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 				.build();
 
 		map.moveCamera(CameraUpdateFactory.newCameraPosition(cameraPosition));
+		map.setInfoWindowAdapter(new InfoPopupAdapter(getLayoutInflater()));
 	}
 }
