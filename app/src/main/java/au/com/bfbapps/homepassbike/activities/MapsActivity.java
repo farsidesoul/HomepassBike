@@ -3,6 +3,7 @@ package au.com.bfbapps.homepassbike.activities;
 import android.graphics.Color;
 import android.support.v4.app.FragmentActivity;
 import android.os.Bundle;
+import android.widget.Toast;
 
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
@@ -20,6 +21,7 @@ import java.util.List;
 
 import au.com.bfbapps.homepassbike.R;
 import au.com.bfbapps.homepassbike.adapters.InfoPopupAdapter;
+import au.com.bfbapps.homepassbike.managers.PreferencesManager;
 import au.com.bfbapps.homepassbike.model.BikeLocation;
 import au.com.bfbapps.homepassbike.service.MelbourneBikeService;
 import retrofit.Call;
@@ -35,12 +37,18 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 	private GoogleMap map;
 	private Retrofit retrofit;
 	private MelbourneBikeService melbourneBikeService;
+	private PreferencesManager prefs;
 	
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_maps);
 		setupService();
+		prefs = new PreferencesManager(this);
+
+		if(prefs.getLocationsFromPrefs() != null){
+			handleBikeLocationReturn(prefs.getLocationsFromPrefs());
+		}
 
 		// Obtain the SupportMapFragment and get notified when the map is ready to be used.
 		SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
@@ -72,7 +80,15 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 		call.enqueue(new Callback<List<BikeLocation>>() {
 			@Override
 			public void onResponse(Response<List<BikeLocation>> response, Retrofit retrofit) {
-				handleBikeLocationReturn(response.body());
+				if(response.body() != null){
+					prefs.saveLocationsToPrefs(response.body());
+					handleBikeLocationReturn(response.body());
+				} else {
+					Toast.makeText(
+							MapsActivity.this,
+							"Unable to retrieve location data",
+							Toast.LENGTH_SHORT).show();
+				}
 			}
 
 			@Override
