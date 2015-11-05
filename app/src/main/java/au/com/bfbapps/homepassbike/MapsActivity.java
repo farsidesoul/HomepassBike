@@ -93,7 +93,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 		CircleOptions options = new CircleOptions()
 				.radius(BASE_RADIUS * location.getNbbikes())
 				.center(coords)
-				.strokeColor(Color.RED);
+				.strokeColor(getResources().getColor(R.color.circleColor));
 
 		map.addCircle(options);
 	}
