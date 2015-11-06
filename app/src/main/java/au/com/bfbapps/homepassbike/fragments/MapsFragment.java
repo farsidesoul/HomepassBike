@@ -1,8 +1,13 @@
-package au.com.bfbapps.homepassbike.activities;
+package au.com.bfbapps.homepassbike.fragments;
 
 import android.graphics.Color;
+import android.support.annotation.Nullable;
+import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentActivity;
 import android.os.Bundle;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.view.ViewGroup;
 import android.widget.Toast;
 
 import com.google.android.gms.maps.CameraUpdateFactory;
@@ -30,7 +35,7 @@ import retrofit.GsonConverterFactory;
 import retrofit.Response;
 import retrofit.Retrofit;
 
-public class MapsActivity extends FragmentActivity implements OnMapReadyCallback {
+public class MapsFragment extends Fragment implements OnMapReadyCallback {
 
 	private final double BASE_RADIUS = 3;
 
@@ -38,22 +43,20 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 	private Retrofit retrofit;
 	private MelbourneBikeService melbourneBikeService;
 	private PreferencesManager prefs;
-	
-	@Override
-	protected void onCreate(Bundle savedInstanceState) {
-		super.onCreate(savedInstanceState);
-		setContentView(R.layout.activity_maps);
-		setupService();
-		prefs = new PreferencesManager(this);
+	private OnMapReady onMapReadyListener;
 
-		if(prefs.getLocationsFromPrefs() != null){
-			handleBikeLocationReturn(prefs.getLocationsFromPrefs());
-		}
+	@Nullable
+	@Override
+	public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+		View v = inflater.inflate(R.layout.activity_maps, container, false);
+		setupService();
+		prefs = new PreferencesManager(getActivity());
 
 		// Obtain the SupportMapFragment and get notified when the map is ready to be used.
-		SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
+		SupportMapFragment mapFragment = (SupportMapFragment) getChildFragmentManager()
 				.findFragmentById(R.id.map);
 		mapFragment.getMapAsync(this);
+		return v;
 	}
 
 	private void setupService() {
@@ -85,7 +88,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 					handleBikeLocationReturn(response.body());
 				} else {
 					Toast.makeText(
-							MapsActivity.this,
+							getActivity(),
 							"Unable to retrieve location data",
 							Toast.LENGTH_SHORT).show();
 				}
@@ -93,12 +96,16 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
 			@Override
 			public void onFailure(Throwable throwable) {
-
+				Toast.makeText(
+						getActivity(),
+						"Unable to retrieve location data",
+						Toast.LENGTH_SHORT).show();
 			}
 		});
 	}
 
 	private void handleBikeLocationReturn(List<BikeLocation> bikeLocations){
+		onMapReadyListener.onMapReady();
 		for(BikeLocation location : bikeLocations){
 			LatLng coords = new LatLng(location.getCoordinates().getLatitude(),
 					location.getCoordinates().getLongitude());
@@ -140,6 +147,12 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 	@Override
 	public void onMapReady(GoogleMap googleMap) {
 		map = googleMap;
+
+		// If we already have some locations stored, we'll use them while we wait for the update
+		if(prefs.getLocationsFromPrefs() != null){
+			handleBikeLocationReturn(prefs.getLocationsFromPrefs());
+		}
+
 		getBikeLocationsFromServer();
 
 		LatLng melbourne = new LatLng(-37.81, 144.96);
@@ -150,6 +163,14 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 				.build();
 
 		map.moveCamera(CameraUpdateFactory.newCameraPosition(cameraPosition));
-		map.setInfoWindowAdapter(new InfoPopupAdapter(getLayoutInflater()));
+		map.setInfoWindowAdapter(new InfoPopupAdapter(getActivity().getLayoutInflater()));
 	}
+
+	public void setOnMapReadyListener(OnMapReady listener){
+		onMapReadyListener = listener;
+	}
+
+	public interface OnMapReady{
+		public void onMapReady();
+	};
 }
