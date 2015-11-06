@@ -47,16 +47,17 @@
 						android:layout_width="0dp"
 						android:layout_height="match_parent"
 						android:layout_weight="0.85"
-						android:visibility="invisible"/>
+						android:visibility="invisible"
+						android:enabled="false"/>
 
 					<ImageView
-						android:id="@+id/image_cancel"
+						android:id="@+id/image_search_cancel"
 						android:layout_width="0dp"
 						android:layout_height="wrap_content"
 						android:layout_weight="0.15"
 						android:layout_gravity="center"
 						android:visibility="invisible"
-						android:src="@android:drawable/ic_menu_close_clear_cancel"/>
+						android:src="@mipmap/ic_search_white_24dp"/>
 				</LinearLayout>
 			</RelativeLayout>
 
@@ -67,14 +68,5 @@
 	</android.support.design.widget.AppBarLayout>
 
 	<include layout="@layout/content_main"/>
-
-	<android.support.design.widget.FloatingActionButton
-		android:id="@+id/fab"
-		android:layout_width="wrap_content"
-		android:layout_height="wrap_content"
-		android:layout_gravity="bottom|end"
-		android:layout_margin="@dimen/fab_margin"
-		android:visibility="invisible"
-		android:src="@mipmap/ic_search_white_24dp"/>
 
 </android.support.design.widget.CoordinatorLayout>

@@ -2,7 +2,6 @@ package au.com.bfbapps.homepassbike.activities;
 
 import android.content.Context;
 import android.os.Bundle;
-import android.support.design.widget.FloatingActionButton;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.view.View;
@@ -25,10 +24,8 @@ public class MainActivity extends AppCompatActivity  {
 	TextView toolbarTitle;
 	@Bind(R.id.autocomplete_search)
 	AutoCompleteTextView searchField;
-	@Bind(R.id.image_cancel)
-	ImageView cancelSearch;
-	@Bind(R.id.fab)
-	FloatingActionButton fab;
+	@Bind(R.id.image_search_cancel)
+	ImageView searchImage;
 
 	private InputMethodManager imm;
 
@@ -62,34 +59,35 @@ public class MainActivity extends AppCompatActivity  {
 	}
 
 	private void hideSearch(){
-		cancelSearch.setVisibility(View.INVISIBLE);
+		searchImage.setImageResource(R.mipmap.ic_search_white_24dp);
 		searchField.setText("");
 		searchField.setVisibility(View.INVISIBLE);
+		searchField.setEnabled(false);
 		toolbarTitle.setVisibility(View.VISIBLE);
 	}
 
 	private void showSearch(){
-		cancelSearch.setVisibility(View.VISIBLE);
+		searchImage.setImageResource(android.R.drawable.ic_menu_close_clear_cancel);
 		searchField.setVisibility(View.VISIBLE);
+		searchField.setEnabled(true);
 		toolbarTitle.setVisibility(View.INVISIBLE);
 	}
 
-	@OnClick(R.id.image_cancel)
-	protected void onCancelClicked(){
-		hideSearch();
-		hideKeyboard();
-	}
-
-	@OnClick(R.id.fab)
-	protected void onFabClick(){
-		showSearch();
-		showKeyboard();
+	@OnClick(R.id.image_search_cancel)
+	protected void onSearchIconClick(){
+		if(searchField.isEnabled()){
+			hideKeyboard();
+			hideSearch();
+		} else {
+			showSearch();
+			showKeyboard();
+		}
 	}
 
 	private final MapsFragment.OnMapReady onMapReadyListener = new MapsFragment.OnMapReady() {
 		@Override
 		public void onMapReady() {
-			fab.setVisibility(View.VISIBLE);
+			searchImage.setVisibility(View.VISIBLE);
 		}
 	};
 }

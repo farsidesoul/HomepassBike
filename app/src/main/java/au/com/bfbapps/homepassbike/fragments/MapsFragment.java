@@ -155,11 +155,11 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback {
 
 		getBikeLocationsFromServer();
 
-		LatLng melbourne = new LatLng(-37.81, 144.96);
+		LatLng melbourne = new LatLng(-37.82, 144.96);
 
 		CameraPosition cameraPosition = new CameraPosition.Builder()
 				.target(melbourne)
-				.zoom(12)
+				.zoom(12.5f)
 				.build();
 
 		map.moveCamera(CameraUpdateFactory.newCameraPosition(cameraPosition));
