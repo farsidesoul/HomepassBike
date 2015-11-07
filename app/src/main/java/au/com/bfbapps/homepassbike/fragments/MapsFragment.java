@@ -65,13 +65,9 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback {
 
 		prefs = new PreferencesManager(getActivity());
 		if(savedInstanceState != null){
-			latLng = new LatLng(savedInstanceState.getDouble(STATE_LATITUDE),
-					savedInstanceState.getDouble(STATE_LONGITUDE));
-			zoom = savedInstanceState.getFloat(STATE_ZOOM);
+			recreateExistingMap(savedInstanceState);
 		} else {
-			latLng = new LatLng(-37.82, 144.96);
-			zoom = DEFAULT_ZOOM;
-			markers = new ArrayList<>();
+			createNewMap();
 		}
 
 		// Obtain the SupportMapFragment and get notified when the map is ready to be used.
@@ -80,6 +76,18 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback {
 		mapFragment.getMapAsync(this);
 
 		return v;
+	}
+
+	private void createNewMap() {
+		latLng = new LatLng(-37.82, 144.96); // Melbourne
+		zoom = DEFAULT_ZOOM;
+		markers = new ArrayList<>();
+	}
+
+	private void recreateExistingMap(Bundle savedInstanceState) {
+		latLng = new LatLng(savedInstanceState.getDouble(STATE_LATITUDE),
+				savedInstanceState.getDouble(STATE_LONGITUDE));
+		zoom = savedInstanceState.getFloat(STATE_ZOOM);
 	}
 
 	//region Network
