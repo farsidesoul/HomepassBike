@@ -1,5 +1,7 @@
 package au.com.bfbapps.homepassbike.fragments;
 
+import android.content.Intent;
+import android.net.Uri;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.os.Bundle;
@@ -199,6 +201,8 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback {
 	public void onMapReady(GoogleMap googleMap) {
 		map = googleMap;
 
+		map.setOnInfoWindowClickListener(infoWindowClickListener);
+
 		// If we already have some locations stored, we'll use them while we wait for the update
 		if(prefs.getLocationsFromPrefs() != null){
 			handleBikeLocationReturn(prefs.getLocationsFromPrefs());
@@ -261,6 +265,21 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback {
 	public void setOnMapReadyListener(OnMapReady listener){
 		onMapReadyListener = listener;
 	}
+
+	private final GoogleMap.OnInfoWindowClickListener infoWindowClickListener =
+			new GoogleMap.OnInfoWindowClickListener() {
+				@Override
+				public void onInfoWindowClick(Marker marker) {
+					Uri locationUri = Uri.parse(String.format("google.navigation:q=%s,%s&mode=w",
+							marker.getPosition().latitude,
+							marker.getPosition().longitude));
+					Intent mapIntent = new Intent(Intent.ACTION_VIEW, locationUri);
+					mapIntent.setPackage("com.google.android.apps.maps");
+					if (mapIntent.resolveActivity(getActivity().getPackageManager()) != null) {
+						startActivity(mapIntent);
+					}
+				}
+			};
 	//endregion
 
 	//region Interfaces

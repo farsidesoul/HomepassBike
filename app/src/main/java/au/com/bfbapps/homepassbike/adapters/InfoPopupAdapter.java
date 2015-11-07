@@ -8,8 +8,17 @@ import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.model.Marker;
 
 import au.com.bfbapps.homepassbike.R;
+import butterknife.Bind;
+import butterknife.ButterKnife;
 
 public class InfoPopupAdapter implements GoogleMap.InfoWindowAdapter {
+
+	@Bind(R.id.text_location_title)
+	TextView title;
+	@Bind(R.id.text_location_bikes_avail)
+	TextView bikesAvail;
+	@Bind(R.id.text_location_empty_slots)
+	TextView slotsAvail;
 
 	private View infoPopup = null;
 	private LayoutInflater inflater = null;
@@ -29,9 +38,7 @@ public class InfoPopupAdapter implements GoogleMap.InfoWindowAdapter {
 			infoPopup = inflater.inflate(R.layout.info_popup, null);
 		}
 
-		TextView title = (TextView) infoPopup.findViewById(R.id.text_location_title);
-		TextView bikesAvail = (TextView) infoPopup.findViewById(R.id.text_location_bikes_avail);
-		TextView slotsAvail = (TextView) infoPopup.findViewById(R.id.text_location_empty_slots);
+		ButterKnife.bind(this, infoPopup);
 
 		String[] info = marker.getSnippet().split("\\|");
 
