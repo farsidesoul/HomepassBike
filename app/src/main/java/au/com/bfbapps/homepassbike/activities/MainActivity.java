@@ -11,6 +11,7 @@ import android.widget.AutoCompleteTextView;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import au.com.bfbapps.homepassbike.R;
@@ -22,6 +23,9 @@ import butterknife.ButterKnife;
 import butterknife.OnClick;
 
 public class MainActivity extends AppCompatActivity  {
+
+	private static final String SEARCH_OPTION_VISIBLE = "searchOptionVisible";
+	private final String STATE_BIKE_LOCATIONS = "bikeLocations";
 
 	@Bind(R.id.toolbar)
 	Toolbar toolbar;
@@ -35,6 +39,7 @@ public class MainActivity extends AppCompatActivity  {
 	private InputMethodManager imm;
 	private MapsFragment mapFragment;
 	private SearchDropDownAdapter adapter;
+	private ArrayList<BikeLocation> bikeLocations;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -47,12 +52,27 @@ public class MainActivity extends AppCompatActivity  {
 		imm = (InputMethodManager)getSystemService(Context.INPUT_METHOD_SERVICE);
 
 		if(savedInstanceState != null){
-			mapFragment = (MapsFragment) getSupportFragmentManager().getFragment(
-					savedInstanceState, "mapFragment");
+			recreateExistingMapFragment(savedInstanceState);
 		} else {
-			mapFragment = new MapsFragment();
-			hostMapFragment();
+			createNewMapFragment();
 		}
+	}
+
+	//region Fragment Creation
+	private void recreateExistingMapFragment(Bundle savedInstanceState) {
+		mapFragment = (MapsFragment) getSupportFragmentManager().getFragment(
+				savedInstanceState, "mapFragment");
+		if(savedInstanceState.getBoolean(SEARCH_OPTION_VISIBLE)){
+			searchImage.setVisibility(View.VISIBLE);
+		}
+		bikeLocations = savedInstanceState.getParcelableArrayList(STATE_BIKE_LOCATIONS);
+		setupSearchAdapter();
+	}
+
+	private void createNewMapFragment() {
+		mapFragment = new MapsFragment();
+		bikeLocations = new ArrayList<>();
+		hostMapFragment();
 	}
 
 	private void hostMapFragment() {
@@ -62,6 +82,9 @@ public class MainActivity extends AppCompatActivity  {
 				.commit();
 	}
 
+	//endregion
+
+	//region Keyboard Methods
 	private void hideKeyboard(){
 		imm.hideSoftInputFromWindow(searchField.getWindowToken(), 0);
 	}
@@ -69,7 +92,9 @@ public class MainActivity extends AppCompatActivity  {
 	private void showKeyboard(){
 		imm.toggleSoftInputFromWindow(searchField.getApplicationWindowToken(), InputMethodManager.SHOW_FORCED, 0);
 	}
+	//endregion
 
+	//region Search
 	private void hideSearch(){
 		searchImage.setImageResource(R.mipmap.ic_search_white_24dp);
 		searchField.setText("");
@@ -86,27 +111,9 @@ public class MainActivity extends AppCompatActivity  {
 		toolbarTitle.setVisibility(View.INVISIBLE);
 	}
 
-	@OnClick(R.id.image_search_cancel)
-	protected void onSearchIconClick(){
-		if(searchField.isEnabled()){
-			hideKeyboard();
-			hideSearch();
-		} else {
-			showSearch();
-			showKeyboard();
-		}
-	}
-
-	private final MapsFragment.OnMapReady onMapReadyListener = new MapsFragment.OnMapReady() {
-		@Override
-		public void onMapReady() {
-			searchImage.setVisibility(View.VISIBLE);
-			setupSearchAdapter();
-		}
-	};
 
 	private void setupSearchAdapter() {
-		adapter = new SearchDropDownAdapter(this, mapFragment.getBikeLocations());
+		adapter = new SearchDropDownAdapter(this, bikeLocations);
 		adapter.setDropDownViewResource(R.layout.adapter_search_list_item);
 		searchField.setThreshold(1);
 		searchField.setAdapter(adapter);
@@ -121,6 +128,20 @@ public class MainActivity extends AppCompatActivity  {
 			}
 		}
 	}
+	//endregion
+
+	//region Listeners
+
+	@OnClick(R.id.image_search_cancel)
+	protected void onSearchIconClick(){
+		if(searchField.isEnabled()){
+			hideKeyboard();
+			hideSearch();
+		} else {
+			showSearch();
+			showKeyboard();
+		}
+	}
 
 	private final AdapterView.OnItemClickListener onSearchItemClickListener =
 			new AdapterView.OnItemClickListener() {
@@ -133,10 +154,23 @@ public class MainActivity extends AppCompatActivity  {
 		}
 	};
 
+	private final MapsFragment.OnMapReady onMapReadyListener = new MapsFragment.OnMapReady() {
+		@Override
+		public void onMapReady() {
+			searchImage.setVisibility(View.VISIBLE);
+			bikeLocations = mapFragment.getBikeLocations();
+			setupSearchAdapter();
+		}
+	};
+
+	//endregion
+
 	@Override
 	protected void onSaveInstanceState(Bundle outState) {
 		//Save the fragment's instance
 		getSupportFragmentManager().putFragment(outState, "mapFragment", mapFragment);
+		outState.putBoolean(SEARCH_OPTION_VISIBLE, searchImage.getVisibility() == View.VISIBLE);
+		outState.putParcelableArrayList(STATE_BIKE_LOCATIONS, bikeLocations);
 		super.onSaveInstanceState(outState);
 	}
 }

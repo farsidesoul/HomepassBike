@@ -21,6 +21,7 @@ import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 
+import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -39,6 +40,9 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback {
 
 	private final double BASE_RADIUS = 5;
 	private final float DEFAULT_ZOOM = 12.5f;
+	private final String STATE_LATITUDE = "latitude";
+	private final String STATE_LONGITUDE = "longitude";
+	private final String STATE_ZOOM = "zoom";
 
 	private GoogleMap map;
 	private Retrofit retrofit;
@@ -47,7 +51,9 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback {
 	private OnMapReady onMapReadyListener;
 
 	private List<Marker> markers;
-	private List<BikeLocation> bikeLocations;
+	private ArrayList<BikeLocation> bikeLocations;
+	private LatLng latLng;
+	private float zoom;
 
 	@Nullable
 	@Override
@@ -56,7 +62,15 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback {
 		setupService();
 
 		prefs = new PreferencesManager(getActivity());
-		markers = new ArrayList<>();
+		if(savedInstanceState != null){
+			latLng = new LatLng(savedInstanceState.getDouble(STATE_LATITUDE),
+					savedInstanceState.getDouble(STATE_LONGITUDE));
+			zoom = savedInstanceState.getFloat(STATE_ZOOM);
+		} else {
+			latLng = new LatLng(-37.82, 144.96);
+			zoom = DEFAULT_ZOOM;
+			markers = new ArrayList<>();
+		}
 
 		// Obtain the SupportMapFragment and get notified when the map is ready to be used.
 		SupportMapFragment mapFragment = (SupportMapFragment) getChildFragmentManager()
@@ -66,6 +80,7 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback {
 		return v;
 	}
 
+	//region Network
 	private void setupService() {
 		setupRetrofitBuilder();
 		setupBikeService();
@@ -86,32 +101,36 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback {
 	}
 
 	private void getBikeLocationsFromServer() {
-		Call<List<BikeLocation>> call = melbourneBikeService.listLocations();
-		call.enqueue(new Callback<List<BikeLocation>>() {
+		Call<ArrayList<BikeLocation>> call = melbourneBikeService.listLocations();
+		call.enqueue(new Callback<ArrayList<BikeLocation>>() {
 			@Override
-			public void onResponse(Response<List<BikeLocation>> response, Retrofit retrofit) {
+			public void onResponse(Response<ArrayList<BikeLocation>> response, Retrofit retrofit) {
 				if (response.body() != null) {
 					prefs.saveLocationsToPrefs(response.body());
 					handleBikeLocationReturn(response.body());
 				} else {
-					Toast.makeText(
-							getActivity(),
-							"Unable to retrieve location data",
-							Toast.LENGTH_SHORT).show();
+					createNetworkErrorToast();
 				}
 			}
 
 			@Override
 			public void onFailure(Throwable throwable) {
-				Toast.makeText(
-						getActivity(),
-						"Unable to retrieve location data",
-						Toast.LENGTH_SHORT).show();
+				createNetworkErrorToast();
 			}
 		});
 	}
 
-	private void handleBikeLocationReturn(List<BikeLocation> bikeLocations){
+	private void createNetworkErrorToast() {
+		Toast.makeText(
+				getActivity(),
+				R.string.network_error_message,
+				Toast.LENGTH_SHORT).show();
+	}
+
+	//endregion
+
+	//region Marker Creation
+	private void handleBikeLocationReturn(ArrayList<BikeLocation> bikeLocations){
 		this.bikeLocations = bikeLocations;
 		if(onMapReadyListener != null){
 			onMapReadyListener.onMapReady();
@@ -173,6 +192,9 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback {
 		return getResources().getColor(R.color.circleStrokeColor);
 	}
 
+	//endregion
+
+	//region Map Ready
 	@Override
 	public void onMapReady(GoogleMap googleMap) {
 		map = googleMap;
@@ -188,16 +210,18 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback {
 	}
 
 	private void moveMapToInitialLocation() {
-
 		CameraPosition cameraPosition = new CameraPosition.Builder()
-				.target(new LatLng(-37.82, 144.96)) // Melbourne
-				.zoom(DEFAULT_ZOOM)
+				.target(latLng) // Melbourne
+				.zoom(zoom)
 				.build();
 
 		map.moveCamera(CameraUpdateFactory.newCameraPosition(cameraPosition));
 		map.setInfoWindowAdapter(new InfoPopupAdapter(getActivity().getLayoutInflater()));
 	}
 
+	//endregion
+
+	//region Marker Selection
 	public void searchForSelectedMarker(String title){
 		findSelectedMarker(title);
 	}
@@ -219,22 +243,29 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback {
 				.build();
 		map.animateCamera(CameraUpdateFactory.newCameraPosition(cameraPosition));
 	}
+	//endregion
 
-	public List<BikeLocation> getBikeLocations(){
+	public ArrayList<BikeLocation> getBikeLocations(){
 		return bikeLocations;
-	}
-
-	public void setOnMapReadyListener(OnMapReady listener){
-		onMapReadyListener = listener;
 	}
 
 	@Override
 	public void onSaveInstanceState(Bundle outState) {
-
+		outState.putDouble(STATE_LATITUDE, map.getCameraPosition().target.latitude);
+		outState.putDouble(STATE_LONGITUDE, map.getCameraPosition().target.longitude);
+		outState.putFloat(STATE_ZOOM, map.getCameraPosition().zoom);
 		super.onSaveInstanceState(outState);
 	}
 
+	//region Listeners
+	public void setOnMapReadyListener(OnMapReady listener){
+		onMapReadyListener = listener;
+	}
+	//endregion
+
+	//region Interfaces
 	public interface OnMapReady{
 		void onMapReady();
 	};
+	//endregion
 }

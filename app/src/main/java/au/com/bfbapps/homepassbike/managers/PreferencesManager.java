@@ -7,6 +7,7 @@ import android.preference.PreferenceManager;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import au.com.bfbapps.homepassbike.model.BikeLocation;
@@ -25,12 +26,12 @@ public class PreferencesManager {
 		gson = new Gson();
 	}
 
-	public void saveLocationsToPrefs(List<BikeLocation> locations){
+	public void saveLocationsToPrefs(ArrayList<BikeLocation> locations){
 		String locationJson = gson.toJson(locations);
 		prefs.edit().putString(LOCATION_LIST_KEY, locationJson).apply();
 	}
 
-	public List<BikeLocation> getLocationsFromPrefs(){
+	public ArrayList<BikeLocation> getLocationsFromPrefs(){
 		return gson.fromJson(prefs.getString(LOCATION_LIST_KEY, ""),
 				new TypeToken<List<BikeLocation>>(){}.getType());
 	}
