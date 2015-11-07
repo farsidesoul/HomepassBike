@@ -11,10 +11,12 @@ import android.widget.AutoCompleteTextView;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import java.util.List;
+
 import au.com.bfbapps.homepassbike.R;
 import au.com.bfbapps.homepassbike.adapters.SearchDropDownAdapter;
 import au.com.bfbapps.homepassbike.fragments.MapsFragment;
-import au.com.bfbapps.homepassbike.managers.PreferencesManager;
+import au.com.bfbapps.homepassbike.model.BikeLocation;
 import butterknife.Bind;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
@@ -31,6 +33,8 @@ public class MainActivity extends AppCompatActivity  {
 	ImageView searchImage;
 
 	private InputMethodManager imm;
+	private MapsFragment mapFragment;
+	private SearchDropDownAdapter adapter;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -42,11 +46,16 @@ public class MainActivity extends AppCompatActivity  {
 
 		imm = (InputMethodManager)getSystemService(Context.INPUT_METHOD_SERVICE);
 
-		hostMapFragment();
+		if(savedInstanceState != null){
+			mapFragment = (MapsFragment) getSupportFragmentManager().getFragment(
+					savedInstanceState, "mapFragment");
+		} else {
+			mapFragment = new MapsFragment();
+			hostMapFragment();
+		}
 	}
 
 	private void hostMapFragment() {
-		MapsFragment mapFragment = new MapsFragment();
 		mapFragment.setOnMapReadyListener(onMapReadyListener);
 		getSupportFragmentManager().beginTransaction()
 				.add(R.id.relative_main_content, mapFragment)
@@ -97,18 +106,37 @@ public class MainActivity extends AppCompatActivity  {
 	};
 
 	private void setupSearchAdapter() {
-		PreferencesManager prefs = new PreferencesManager(MainActivity.this);
-
-		SearchDropDownAdapter adapter = new SearchDropDownAdapter(this, prefs.getLocationsFromPrefs());
+		adapter = new SearchDropDownAdapter(this, mapFragment.getBikeLocations());
 		adapter.setDropDownViewResource(R.layout.adapter_search_list_item);
 		searchField.setThreshold(1);
 		searchField.setAdapter(adapter);
+		searchField.setOnItemClickListener(onSearchItemClickListener);
+	}
 
-		searchField.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-			@Override
-			public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-
+	private void focusOnSelectedLocation(List<BikeLocation> bikeLocations) {
+		for(BikeLocation location : bikeLocations){
+			if(location.getFeatureName().equals(searchField.getText().toString())){
+				mapFragment.searchForSelectedMarker(location.getFeatureName());
+				break;
 			}
-		});
+		}
+	}
+
+	private final AdapterView.OnItemClickListener onSearchItemClickListener =
+			new AdapterView.OnItemClickListener() {
+		@Override
+		public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+			List<BikeLocation> bikeLocations = mapFragment.getBikeLocations();
+			focusOnSelectedLocation(bikeLocations);
+			hideKeyboard();
+			hideSearch();
+		}
+	};
+
+	@Override
+	protected void onSaveInstanceState(Bundle outState) {
+		//Save the fragment's instance
+		getSupportFragmentManager().putFragment(outState, "mapFragment", mapFragment);
+		super.onSaveInstanceState(outState);
 	}
 }

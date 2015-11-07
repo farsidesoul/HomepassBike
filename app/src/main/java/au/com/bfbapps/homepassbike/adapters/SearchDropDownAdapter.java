@@ -39,7 +39,7 @@ public class SearchDropDownAdapter extends ArrayAdapter<BikeLocation> {
 			convertView.setTag(holder);
 		}
 
-		BikeLocation location = locations.get(position);
+		BikeLocation location = getItem(position);
 		holder.locationName.setText(location.getFeatureName());
 		holder.bikesAvailable.setText(String.format("Available Bikes: %s", location.getNbbikes()));
 

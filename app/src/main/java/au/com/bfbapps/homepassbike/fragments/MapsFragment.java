@@ -3,6 +3,7 @@ package au.com.bfbapps.homepassbike.fragments;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -15,10 +16,12 @@ import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.CameraPosition;
 import com.google.android.gms.maps.model.CircleOptions;
 import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import au.com.bfbapps.homepassbike.R;
@@ -35,6 +38,7 @@ import retrofit.Retrofit;
 public class MapsFragment extends Fragment implements OnMapReadyCallback {
 
 	private final double BASE_RADIUS = 5;
+	private final float DEFAULT_ZOOM = 12.5f;
 
 	private GoogleMap map;
 	private Retrofit retrofit;
@@ -42,17 +46,23 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback {
 	private PreferencesManager prefs;
 	private OnMapReady onMapReadyListener;
 
+	private List<Marker> markers;
+	private List<BikeLocation> bikeLocations;
+
 	@Nullable
 	@Override
 	public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
 		View v = inflater.inflate(R.layout.activity_maps, container, false);
 		setupService();
+
 		prefs = new PreferencesManager(getActivity());
+		markers = new ArrayList<>();
 
 		// Obtain the SupportMapFragment and get notified when the map is ready to be used.
 		SupportMapFragment mapFragment = (SupportMapFragment) getChildFragmentManager()
 				.findFragmentById(R.id.map);
 		mapFragment.getMapAsync(this);
+
 		return v;
 	}
 
@@ -80,7 +90,7 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback {
 		call.enqueue(new Callback<List<BikeLocation>>() {
 			@Override
 			public void onResponse(Response<List<BikeLocation>> response, Retrofit retrofit) {
-				if(response.body() != null){
+				if (response.body() != null) {
 					prefs.saveLocationsToPrefs(response.body());
 					handleBikeLocationReturn(response.body());
 				} else {
@@ -102,7 +112,10 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback {
 	}
 
 	private void handleBikeLocationReturn(List<BikeLocation> bikeLocations){
-		onMapReadyListener.onMapReady();
+		this.bikeLocations = bikeLocations;
+		if(onMapReadyListener != null){
+			onMapReadyListener.onMapReady();
+		}
 
 		clearExistingMarkers();
 
@@ -120,6 +133,7 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback {
 
 	private void clearExistingMarkers() {
 		map.clear();
+		markers = new ArrayList<>();
 	}
 
 	private void createMarkerWithLabel(BikeLocation location, LatLng coords) {
@@ -130,7 +144,9 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback {
 				.snippet("Bikes Available: " + location.getNbbikes() + "|Empty Slots: " + location.getNbemptydoc())
 				.alpha(0f);
 
-		map.addMarker(options);
+
+		Marker marker = map.addMarker(options);
+		markers.add(marker);
 	}
 
 	private void createCircleOnBikeLocation(BikeLocation location, LatLng coords) {
@@ -168,19 +184,54 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback {
 
 		getBikeLocationsFromServer();
 
-		LatLng melbourne = new LatLng(-37.82, 144.96);
+		moveMapToInitialLocation();
+	}
+
+	private void moveMapToInitialLocation() {
 
 		CameraPosition cameraPosition = new CameraPosition.Builder()
-				.target(melbourne)
-				.zoom(12.5f)
+				.target(new LatLng(-37.82, 144.96)) // Melbourne
+				.zoom(DEFAULT_ZOOM)
 				.build();
 
 		map.moveCamera(CameraUpdateFactory.newCameraPosition(cameraPosition));
 		map.setInfoWindowAdapter(new InfoPopupAdapter(getActivity().getLayoutInflater()));
 	}
 
+	public void searchForSelectedMarker(String title){
+		findSelectedMarker(title);
+	}
+
+	private void findSelectedMarker(String title) {
+		for(Marker marker : markers){
+			if(marker.getTitle().equals(title)){
+				moveToMarker(marker);
+				break;
+			}
+		}
+	}
+
+	private void moveToMarker(Marker marker) {
+		marker.showInfoWindow();
+		CameraPosition cameraPosition = new CameraPosition.Builder()
+				.target(marker.getPosition())
+				.zoom(16f)
+				.build();
+		map.animateCamera(CameraUpdateFactory.newCameraPosition(cameraPosition));
+	}
+
+	public List<BikeLocation> getBikeLocations(){
+		return bikeLocations;
+	}
+
 	public void setOnMapReadyListener(OnMapReady listener){
 		onMapReadyListener = listener;
+	}
+
+	@Override
+	public void onSaveInstanceState(Bundle outState) {
+
+		super.onSaveInstanceState(outState);
 	}
 
 	public interface OnMapReady{
