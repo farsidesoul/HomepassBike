@@ -39,4 +39,9 @@ public class BikeLocation {
 	public Date getUploaddate() {
 		return uploaddate;
 	}
+
+	@Override
+	public String toString() {
+		return featurename;
+	}
 }

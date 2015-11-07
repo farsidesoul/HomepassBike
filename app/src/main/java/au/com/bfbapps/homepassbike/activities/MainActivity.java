@@ -6,12 +6,15 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.view.View;
 import android.view.inputmethod.InputMethodManager;
+import android.widget.AdapterView;
 import android.widget.AutoCompleteTextView;
 import android.widget.ImageView;
 import android.widget.TextView;
 
 import au.com.bfbapps.homepassbike.R;
+import au.com.bfbapps.homepassbike.adapters.SearchDropDownAdapter;
 import au.com.bfbapps.homepassbike.fragments.MapsFragment;
+import au.com.bfbapps.homepassbike.managers.PreferencesManager;
 import butterknife.Bind;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
@@ -70,6 +73,7 @@ public class MainActivity extends AppCompatActivity  {
 		searchImage.setImageResource(android.R.drawable.ic_menu_close_clear_cancel);
 		searchField.setVisibility(View.VISIBLE);
 		searchField.setEnabled(true);
+		searchField.requestFocus();
 		toolbarTitle.setVisibility(View.INVISIBLE);
 	}
 
@@ -88,6 +92,23 @@ public class MainActivity extends AppCompatActivity  {
 		@Override
 		public void onMapReady() {
 			searchImage.setVisibility(View.VISIBLE);
+			setupSearchAdapter();
 		}
 	};
+
+	private void setupSearchAdapter() {
+		PreferencesManager prefs = new PreferencesManager(MainActivity.this);
+
+		SearchDropDownAdapter adapter = new SearchDropDownAdapter(this, prefs.getLocationsFromPrefs());
+		adapter.setDropDownViewResource(R.layout.adapter_search_list_item);
+		searchField.setThreshold(1);
+		searchField.setAdapter(adapter);
+
+		searchField.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+			@Override
+			public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+
+			}
+		});
+	}
 }

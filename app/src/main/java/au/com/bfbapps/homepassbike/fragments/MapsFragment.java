@@ -106,12 +106,23 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback {
 
 	private void handleBikeLocationReturn(List<BikeLocation> bikeLocations){
 		onMapReadyListener.onMapReady();
+
+		clearExistingMarkers();
+
 		for(BikeLocation location : bikeLocations){
-			LatLng coords = new LatLng(location.getCoordinates().getLatitude(),
-					location.getCoordinates().getLongitude());
-			createCircleOnBikeLocation(location, coords);
-			createMarkerWithLabel(location, coords);
+			createMarkerWithCircleAtLocation(location);
 		}
+	}
+
+	private void createMarkerWithCircleAtLocation(BikeLocation location) {
+		LatLng coords = new LatLng(location.getCoordinates().getLatitude(),
+				location.getCoordinates().getLongitude());
+		createCircleOnBikeLocation(location, coords);
+		createMarkerWithLabel(location, coords);
+	}
+
+	private void clearExistingMarkers() {
+		map.clear();
 	}
 
 	private void createMarkerWithLabel(BikeLocation location, LatLng coords) {
@@ -127,23 +138,19 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback {
 
 	private void createCircleOnBikeLocation(BikeLocation location, LatLng coords) {
 		CircleOptions options = new CircleOptions()
-				.radius(BASE_RADIUS * location.getNbbikes())
+				// If there are no bikes, give it the smallest width
+				.radius(BASE_RADIUS * (location.getNbbikes() == 0 ? 1 : location.getNbbikes()))
 				.center(coords)
-				.strokeColor(getResources().getColor(R.color.circleColor));
+				.strokeColor(getCircleColor())
+				.fillColor(getCircleColor());
 
 		map.addCircle(options);
 	}
-	
-	
-	/**
-	 * Manipulates the map once available.
-	 * This callback is triggered when the map is ready to be used.
-	 * This is where we can add markers or lines, add listeners or move the camera. In this case,
-	 * we just add a marker near Sydney, Australia.
-	 * If Google Play services is not installed on the device, the user will be prompted to install
-	 * it inside the SupportMapFragment. This method will only be triggered once the user has
-	 * installed Google Play services and returned to the app.
-	 */
+
+	private int getCircleColor() {
+		return getResources().getColor(R.color.circleColor);
+	}
+
 	@Override
 	public void onMapReady(GoogleMap googleMap) {
 		map = googleMap;

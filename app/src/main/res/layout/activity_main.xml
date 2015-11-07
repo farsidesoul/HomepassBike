@@ -48,7 +48,14 @@
 						android:layout_height="match_parent"
 						android:layout_weight="0.85"
 						android:visibility="invisible"
-						android:enabled="false"/>
+						android:enabled="false"
+						android:singleLine="true"
+						android:paddingLeft="10dp"
+						android:paddingRight="10dp"
+						android:imeOptions="actionSearch"
+						android:dropDownHeight="wrap_content"
+						android:textColor="@color/primary_material_light"
+						style="@style/DropDownListViewStyle"/>
 
 					<ImageView
 						android:id="@+id/image_search_cancel"
