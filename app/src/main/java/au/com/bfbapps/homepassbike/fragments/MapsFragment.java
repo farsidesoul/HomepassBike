@@ -1,9 +1,7 @@
 package au.com.bfbapps.homepassbike.fragments;
 
-import android.graphics.Color;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
-import android.support.v4.app.FragmentActivity;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -15,7 +13,6 @@ import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.CameraPosition;
-import com.google.android.gms.maps.model.Circle;
 import com.google.android.gms.maps.model.CircleOptions;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MarkerOptions;
@@ -37,7 +34,7 @@ import retrofit.Retrofit;
 
 public class MapsFragment extends Fragment implements OnMapReadyCallback {
 
-	private final double BASE_RADIUS = 3;
+	private final double BASE_RADIUS = 5;
 
 	private GoogleMap map;
 	private Retrofit retrofit;
@@ -141,14 +138,23 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback {
 				// If there are no bikes, give it the smallest width
 				.radius(BASE_RADIUS * (location.getNbbikes() == 0 ? 1 : location.getNbbikes()))
 				.center(coords)
-				.strokeColor(getCircleColor())
-				.fillColor(getCircleColor());
+				.strokeColor(getCircleStrokeColor())
+				.fillColor(getCircleFillColor());
 
+		// Add large circle first
+		map.addCircle(options);
+
+		// Add smaller circle at exact location
+		options.radius(BASE_RADIUS);
 		map.addCircle(options);
 	}
 
-	private int getCircleColor() {
-		return getResources().getColor(R.color.circleColor);
+	private int getCircleFillColor() {
+		return getResources().getColor(R.color.circleFillColor);
+	}
+
+	private int getCircleStrokeColor(){
+		return getResources().getColor(R.color.circleStrokeColor);
 	}
 
 	@Override
@@ -178,6 +184,6 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback {
 	}
 
 	public interface OnMapReady{
-		public void onMapReady();
+		void onMapReady();
 	};
 }
