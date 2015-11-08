@@ -57,6 +57,8 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback {
 	private LatLng latLng;
 	private float zoom;
 
+	private int retryCount;
+
 	@Nullable
 	@Override
 	public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
@@ -117,17 +119,28 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback {
 			public void onResponse(Response<ArrayList<BikeLocation>> response, Retrofit retrofit) {
 				if (response.body() != null) {
 					prefs.saveLocationsToPrefs(response.body());
+					Toast.makeText(getActivity(), "Locations updated", Toast.LENGTH_SHORT).show();
 					handleBikeLocationReturn(response.body());
 				} else {
-					createNetworkErrorToast();
+					shouldRetryConnection();
 				}
 			}
 
 			@Override
 			public void onFailure(Throwable throwable) {
-				createNetworkErrorToast();
+				shouldRetryConnection();
 			}
 		});
+	}
+
+	private void shouldRetryConnection() {
+		if(retryCount < 5){
+			getBikeLocationsFromServer();
+			retryCount++;
+		} else {
+			createNetworkErrorToast();
+			retryCount = 0;
+		}
 	}
 
 	private void createNetworkErrorToast() {
