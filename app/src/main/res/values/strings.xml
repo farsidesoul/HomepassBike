@@ -1,7 +1,7 @@
 <resources>
-	<string name="app_name">HomepassBike</string>
+	<string name="app_name">Melbourne Bike</string>
 	<string name="title_activity_maps">Map</string>
-	<string name="title_activity_main">MainActivity</string>
+	<string name="title_activity_main">Melbourne Bike</string>
 	<string name="network_error_message">Unable to retrieve current location data</string>
 	<string name="get_directions">Get Directions</string>
 	<string name="tap_for_directions">Tap for directions...</string>
