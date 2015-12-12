@@ -11,9 +11,13 @@ import android.widget.AutoCompleteTextView;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import com.google.android.gms.ads.AdRequest;
+import com.google.android.gms.ads.AdView;
+
 import java.util.ArrayList;
 import java.util.List;
 
+import au.com.bfbapps.homepassbike.BuildConfig;
 import au.com.bfbapps.homepassbike.R;
 import au.com.bfbapps.homepassbike.adapters.SearchDropDownAdapter;
 import au.com.bfbapps.homepassbike.fragments.MapsFragment;
@@ -56,6 +60,19 @@ public class MainActivity extends AppCompatActivity  {
 		} else {
 			createNewMapFragment();
 		}
+		setupAds();
+	}
+
+	private void setupAds() {
+		// Setup Ads
+		AdView adView = (AdView) findViewById(R.id.adView);
+		AdRequest adRequest = null;
+		if(BuildConfig.DEBUG){
+			adRequest = new AdRequest.Builder().addTestDevice("0B26127F8A579BDF9532357BDAE49E97").build();
+		} else {
+			adRequest = new AdRequest.Builder().build();
+		}
+		adView.loadAd(adRequest);
 	}
 
 	//region Fragment Creation
