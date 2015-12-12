@@ -20,9 +20,10 @@
     string in this file.
 
 
-		AIzaSyBS9YNOSw7VQBQI8nfROJE4HZdJXa0Vnu4
+		AIzaSyBS9YNOSw7VQBQI8nfROJE4HZdJXa0Vnu4 //  first
+		AIzaSyAfrdBTxs3fNnhVJAV1l0jCK5blbfWKOjk  //  mac
     -->
 	<string name="google_maps_key" translatable="false" templateMergeStrategy="preserve">
-        AIzaSyCTZ2DNGGJz_uVz2rAc64f0_uyT8MoselQ
+        AIzaSyAKPrdzFRsuw8thrG0f4bhMlWJJFcRafaw
 	</string>
 </resources>
